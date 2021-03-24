@@ -36,7 +36,7 @@ The host to use for testnet is `ws.testnet.digitexfutures.com`; for mainnet use
 or a `session_id` instead of a `token`, depending on the type of key that you
 have.
 
-You can get a token over at https://exchange.digitexfutures.com/profile/api
+You can get a token over at https://exchange.digitexfutures.com/profile/account
 
 To check if the connection is successful, ping the engine:
 
