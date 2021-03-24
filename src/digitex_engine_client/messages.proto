@@ -1,0 +1,1072 @@
+syntax = "proto3";
+
+// version: 139
+// last_field_id: 347
+
+package digitex_wire;
+
+option java_package = "com.digitexfutures";
+
+enum MessageType
+{
+  NOP = 0;
+  PLACE_ORDER = 513;
+  CANCEL_ORDER = 514;
+  CANCEL_ALL_ORDERS = 515;
+  CHANGE_LEVERAGE = 516;
+  ORDER_STATUS = 517;
+  ORDER_FILLED = 518;
+  CHANGE_LEVERAGE_ALL = 519;
+  TRADER_BALANCE = 522;
+  POSITION_EVENT = 523;
+  LEVERAGE = 524;
+  EXCHANGE_RATE = 525;
+  ORDER_BOOK_REQUEST = 526;
+  ORDER_BOOK = 527;
+  ORDER_BOOK_UPDATED = 528;
+  PING = 529;
+  PONG = 530;
+  UPDATE_ORDER = 531;
+  GET_TRADER_STATUS = 532;
+  TRADER_STATUS = 533;
+  FUNDING = 535;
+  OHLCV_LIST = 536;
+  TRADE_LIST = 537;
+  SUBSCRIBE = 538;
+  SUBSCRIBE_STATUS = 539;
+  UPDATE_CONTRACT = 540;
+  UPDATE_ALL_CONRACTS = 541;
+  CLOSE_CONTRACT = 542;
+  CLOSE_ALL_CONTRACTS = 543;
+  ORDER_CANCELED = 546;
+  GET_MARKET_STATE = 548;
+  MARKET_STATE = 549;
+  GET_EXCHANGE_RATES = 550;
+  EXCHANGE_RATES = 551;
+  MARKET_STATE_UPDATE = 552;
+  CONTRACT_CLOSED = 553;
+  CONTRACT_TRANSFERRED = 554;
+  GET_TRADER_BALANCE = 562;
+  TRADER_BALANCE_UPDATED = 564;
+  PLACE_DELAYED_ACTION = 566;
+  UPDATE_DELAYED_ACTION = 567;
+  CANCEL_DELAYED_ACTION = 568;
+  DELAYED_ACTION_STATUS = 569;
+  LIQUIDATIONS = 570;
+  FUNDING_INFO = 571;
+  ERROR = 572;
+  MARKET_TRADER_STATISTICS = 573;
+};
+
+enum ValueType
+{
+  TYPE_NONE = 0;
+  INT64 = 1;
+  UINT64 = 2;
+  DOUBLE = 3;
+  STRING = 4;
+  BYTES = 5;
+  DECIMAL = 6;
+}
+
+enum OrderSide
+{
+  SIDE_UNDEFINED = 0;
+  BUY = 1;
+  SELL = 2;
+}
+
+enum OrderType
+{
+  TYPE_UNDEFINED = 0;
+  MARKET = 1;
+  LIMIT = 2;
+}
+
+enum OrderDuration
+{
+  DURATION_UNDEFINED = 0;
+  GFD = 1;  // good for the day
+  GTC = 2;  // good till cancel
+  GTF = 3;  // good till funding
+  IOC = 4;  // immediate or cancel
+  FOK = 5;  // fill or kill
+}
+
+enum OrderStatus
+{
+  STATUS_UNDEFINED = 0;
+  PENDING = 1;
+  ACCEPTED = 2;
+  REJECTED = 3;
+  CANCELED = 4;
+  FILLED = 5;
+  PARTIAL = 6;
+  TERMINATED = 7;
+  EXPIRED = 8;
+  TRIGGERED = 9;
+}
+
+enum OrderPosition
+{
+  UNDEFINED = 0;
+  LONG = 1;
+  SHORT = 2;
+}
+
+enum DelayedActionType
+{
+  DA_UNDEFINED = 0;
+  DA_ORDER = 1;
+}
+
+enum DelayedTriggerVariable
+{
+  DTV_UNDEFINED = 0;
+  DTV_ORACLE_PRICE = 1;
+  DTV_LAST_TRADE_PRICE = 2;
+}
+
+enum DelayedTriggerCondition
+{
+  DTC_UNDEFINED = 0;
+  DTC_GREATER_OR_EQUAL = 1;
+  DTC_LESS_OR_EQUAL = 2;
+}
+
+enum ControlCommand
+{
+  CONTROL_NOP = 0;
+  STOP = 1;
+  RESTART = 2;
+  SUSPEND = 3;
+  MINUTE = 4;
+  SUSPEND_TRADING = 5;  // suspend trading, in the suspended state trading-related requests will fail
+  RESUME_TRADING = 6;   // resume trading
+  DISABLE_FUNDING = 7;  // disable funding events
+  ENABLE_FUNDING = 8;
+  FORCE_FUNDING = 9;    // perform funding right now
+  DISABLE_WITHDRAWALS = 10;
+  ENABLE_WITHDRAWALS = 11;
+  BAN_TRADER = 12;
+  UNBAN_TRADER = 13;
+  DUMP_TRADES = 14;
+  DUMP_ORDERS = 15;
+  CLEAR_ORDERBOOK = 16; // clear the orderbook
+  SETTLE_MARKET = 17;   // perform the final settlement, clear the orderbook and close the market
+  GET_STATE = 18;       // request the engine state
+  DUMP_TRADER_STATES = 19;
+  TICK = 20;
+  SET_FUNDING_RATE = 21;
+  SET_LAST_TRADE_PRICE = 22;
+  SET_VALUE = 23;               // generic request, requires value_code
+  GET_VALUE = 24;               // generic request, requires value_code
+  HTTP_GET = 25;                // generic request, requires value_code
+  HTTP_POST = 26;               // generic request, requires value_code
+  DUMP_MARKET_TRADER_STATES = 27;
+  MINUTE_RANDOM_TIME = 28;
+}
+
+enum FundingType
+{
+  FUNDING_UNKNOWN = 0;
+  FUNDING_FUNDING = 1;
+  FUNDING_LIQUIDITY_REWARD = 2;
+}
+
+message Decimal
+{
+  int64 value64 = 36;
+  // protobuf does not support 256-bit values natively, this is ULEB128 value
+  // used only if value64 is not enough
+  bytes value256 = 64;
+  uint32 scale = 37;
+}
+
+message PlaceOrderMessage
+{
+  OrderType order_type = 32;
+  OrderSide side = 33;
+  uint32 leverage = 34;
+  OrderDuration duration = 35;
+  Decimal price = 38;
+  Decimal quantity = 39;
+  int32 is_closing = 280;
+}
+
+message UpdateOrderMessage
+{
+  bytes prev_client_id = 40;
+  OrderType order_type = 32;
+  OrderSide side = 33;
+  uint32 leverage = 34;
+  OrderDuration duration = 35;
+  Decimal price = 38;
+  Decimal quantity = 39;
+}
+
+message CancelOrderMessage
+{
+  bytes prev_client_id = 40;
+}
+
+message CancelAllOrdersMessage
+{
+  OrderSide side = 33;
+  Decimal price = 38;
+}
+
+message ChangeLeverageMessage
+{
+  uint32 leverage = 34;
+  uint64 contract_id = 41;
+}
+
+message ChangeLeverageAllMessage
+{
+  uint32 leverage = 34;
+}
+
+message OrderStatusMessage
+{
+  OrderStatus status = 42;
+
+  Decimal trader_balance = 51;
+  Decimal order_margin = 76;
+  Decimal position_margin = 78;
+  Decimal upnl = 79;
+  Decimal pnl = 154;
+  Decimal accum_quantity = 181;
+  Decimal buy_order_margin = 118;
+  Decimal sell_order_margin = 119;
+  Decimal buy_order_quantity = 182;
+  Decimal sell_order_quantity = 183;
+  Decimal trader_balance_2 = 278; // for spot market, balance in base currency
+  Decimal full_position_margin = 298;
+  Decimal full_buy_order_margin = 299;
+  Decimal full_sell_order_margin = 300;
+  Decimal position_contracts = 104;
+  Decimal position_volume = 105;
+  Decimal position_liquidation_volume = 106;
+  Decimal position_bankruptcy_volume = 117;
+  OrderPosition position_type = 107;
+
+  Decimal mark_price = 52;
+
+  OrderType order_type = 32;
+  OrderSide side = 33;
+  uint32 leverage = 34;
+  OrderDuration duration = 35;
+  Decimal price = 38;
+  Decimal quantity = 39;
+  Decimal paid_price = 66;
+  uint64 old_contract_id = 57;
+  Decimal volume = 279; // for spot market if 'price * quantity' has been rounded
+  int32 is_closing = 280;
+
+  bytes order_client_id = 71;
+  int64 order_timestamp = 72;
+
+  bytes orig_client_id = 204;
+  int64 open_time = 205;
+  Decimal orig_quantity = 206;
+
+  bytes orig_order_id = 327;    // from v129: the auto-generated order_id of the first order in chain
+}
+
+message LeverageMessage
+{
+  uint32 leverage = 34;
+  repeated TradeMessage trades = 46;
+  repeated OrderMessage orders = 70;
+
+  Decimal trader_balance = 51;
+  Decimal order_margin = 76;
+  Decimal position_margin = 78;
+  Decimal upnl = 79;
+  Decimal pnl = 154;
+  Decimal accum_quantity = 181;
+  Decimal position_contracts = 104;
+  Decimal position_volume = 105;
+  Decimal position_liquidation_volume = 106;
+  Decimal position_bankruptcy_volume = 117;
+  OrderPosition position_type = 107;
+  Decimal buy_order_margin = 118;
+  Decimal sell_order_margin = 119;
+  Decimal last_trade_price = 113;
+  Decimal last_trade_quantity = 116;
+  int64 last_trade_timestamp = 296;
+  Decimal buy_order_quantity = 182;
+  Decimal sell_order_quantity = 183;
+  Decimal full_position_margin = 298;
+  Decimal full_buy_order_margin = 299;
+  Decimal full_sell_order_margin = 300;
+}
+
+message TradeMessage
+{
+  int64 trade_timestamp = 69;
+  uint32 trade_trader_id = 74;
+  OrderPosition position = 45;
+  Decimal price = 38;
+  Decimal paid_price = 66;
+  Decimal liquidation_price = 67;
+  Decimal bankruptcy_price = 202;
+  Decimal quantity = 39;
+  Decimal exit_price = 166;
+  uint32 leverage = 34;
+  uint64 contract_id = 41;
+  uint64 old_contract_id = 57;
+  bytes old_client_id = 65;
+  int32 is_increase = 164;
+  int32 is_liquidation = 167;
+  int64 open_time = 194;
+  Decimal entry_quantity = 195;
+  Decimal exit_quantity = 196;
+  Decimal exit_volume = 197;
+
+  Decimal funding_paid_price = 198;
+  Decimal funding_quantity = 199;
+  Decimal funding_volume = 200;
+  int32 funding_count = 201;
+  int32 is_funding = 203;
+  int32 is_maker = 207;
+  uint64 orig_contract_id = 208;
+  int32 is_settlement = 277;
+  Decimal volume = 279; // for spot market if 'price * quantity' has been rounded
+}
+
+message OrderFilledMessage
+{
+  OrderStatus status = 42;
+
+  bytes new_client_id = 44;
+  OrderType order_type = 32;
+  OrderSide side = 33;
+  uint32 leverage = 34;
+  OrderDuration duration = 35;
+  Decimal price = 38;
+  Decimal quantity = 39;
+  Decimal paid_price = 66;
+  bytes orig_client_id = 204;
+  int64 open_time = 205;
+  Decimal orig_quantity = 206;
+  Decimal volume = 279; // for spot market if 'price * quantity' has been rounded
+
+  Decimal dropped_quantity = 152;
+
+  bytes old_order_id = 153;     // from v129: the auto-generated order_id that matched
+  bytes orig_order_id = 327;    // from v129: the auto-generated order_id of the first order in chain
+
+  Decimal trader_balance = 51;
+  Decimal order_margin = 76;
+  Decimal position_margin = 78;
+  Decimal upnl = 79;
+  Decimal pnl = 154;
+  Decimal accum_quantity = 181;
+  Decimal position_contracts = 104;
+  Decimal position_volume = 105;
+  Decimal position_liquidation_volume = 106;
+  Decimal position_bankruptcy_volume = 117;
+  OrderPosition position_type = 107;
+  Decimal last_trade_price = 113;
+  Decimal last_trade_quantity = 116;
+  int64 last_trade_timestamp = 296;
+  Decimal buy_order_margin = 118;
+  Decimal sell_order_margin = 119;
+  Decimal buy_order_quantity = 182;
+  Decimal sell_order_quantity = 183;
+  Decimal mark_price = 52;
+  Decimal trader_balance_2 = 278; // for spot market, balance in base currency
+  Decimal full_position_margin = 298;
+  Decimal full_buy_order_margin = 299;
+  Decimal full_sell_order_margin = 300;
+
+  repeated TradeMessage trades = 46;
+  repeated TradeMessage raw_trades = 82;
+}
+
+message ExchangeRateMessage
+{
+  uint32 currency_pair_id = 47;
+  Decimal mark_price = 52;
+  Decimal sell_price = 114; // recommended sell price, for example, for DGTX/BTC it is the price of purchase of one DGTX from the treasury
+  Decimal buy_price = 115;  // recommended buy price, for DGTX/BTC it is the price of byuing back DGTX to the treasury
+  int32 unreliable = 209;
+}
+
+message TraderBalanceUpdateMessage
+{
+  uint32 currency_id = 49;
+  Decimal increment = 50;
+}
+
+message TraderBalanceMessage
+{
+  uint32 currency_id = 49;
+  Decimal trader_balance = 51;
+  Decimal order_margin = 76;
+  Decimal position_margin = 78;
+  Decimal upnl = 79;
+  Decimal pnl = 154;
+  Decimal accum_quantity = 181;
+  Decimal position_contracts = 104;
+  Decimal position_volume = 105;
+  Decimal position_liquidation_volume = 106;
+  Decimal position_bankruptcy_volume = 117;
+  OrderPosition position_type = 107;
+  Decimal last_trade_price = 113;
+  Decimal last_trade_quantity = 116;
+  int64 last_trade_timestamp = 296;
+  Decimal buy_order_margin = 118;
+  Decimal sell_order_margin = 119;
+  Decimal buy_order_quantity = 182;
+  Decimal sell_order_quantity = 183;
+  Decimal full_position_margin = 298;
+  Decimal full_buy_order_margin = 299;
+  Decimal full_sell_order_margin = 300;
+}
+
+message PositionEventMessage
+{
+  // liquidated contracts are just taken from the trader
+  repeated uint64 liquidated_contracts = 83; // DEPRECATED, see liquidated_trades
+
+  repeated TradeMessage liquidated_trades = 168;
+  repeated bytes terminated_orders = 96;     // DEPRECATED, see orders
+  repeated OrderMessage orders = 70;         // liquidated orders
+
+  // the order parameters are reported
+  //repeated OrderMessage stop_loss_contracts = 84;
+  //repeated OrderMessage take_profit_contracts = 85;
+
+  Decimal trader_balance = 51;
+  Decimal order_margin = 76;
+  Decimal position_margin = 78;
+  Decimal upnl = 79;
+  Decimal pnl = 154;
+  Decimal accum_quantity = 181;
+  Decimal position_contracts = 104;
+  Decimal position_volume = 105;
+  Decimal position_liquidation_volume = 106;
+  Decimal position_bankruptcy_volume = 117;
+  OrderPosition position_type = 107;
+  Decimal last_trade_price = 113;
+  Decimal last_trade_quantity = 116;
+  int64 last_trade_timestamp = 296;
+  Decimal buy_order_margin = 118;
+  Decimal sell_order_margin = 119;
+  Decimal trader_balance_increment = 134;
+  Decimal buy_order_quantity = 182;
+  Decimal sell_order_quantity = 183;
+  Decimal full_position_margin = 298;
+  Decimal full_buy_order_margin = 299;
+  Decimal full_sell_order_margin = 300;
+
+  Decimal mark_price = 52;
+  Decimal floor_mark_price = 135;
+  Decimal ceil_mark_price = 136;
+}
+
+message OrderBookRequestMessage
+{
+}
+
+message OrderBookEntryMessage
+{
+  Decimal price = 38;
+  Decimal quantity = 39;
+  int64 entry_timestamp = 155;
+}
+
+message OrderBookTradeEntryMessage
+{
+  Decimal price = 38;
+  Decimal quantity = 39;
+  int64 entry_timestamp = 155;
+  OrderSide side = 33;
+}
+
+message OrderBookMessage
+{
+  repeated OrderBookEntryMessage bids = 53;
+  repeated OrderBookEntryMessage asks = 54;
+  Decimal mark_price = 52;
+  Decimal last_trade_price = 113;
+  Decimal last_trade_quantity = 116;
+  int64 last_trade_timestamp = 296;
+}
+
+message OrderBookUpdatedMessage
+{
+  repeated OrderBookEntryMessage bid_updates = 58;
+  repeated OrderBookEntryMessage ask_updates = 59;
+  repeated OrderBookEntryMessage trades = 60;
+  repeated OrderBookTradeEntryMessage trades2 = 292;
+  Decimal mark_price = 52;
+  int64 last_full_timestamp = 55;
+  int64 update_serial = 56;
+  Decimal last_trade_price = 113;
+  Decimal last_trade_quantity = 116;
+  int64 last_trade_timestamp = 296;
+}
+
+message PingMessage
+{
+}
+
+message PongMessage
+{
+  uint32 ping_sender = 61;
+  uint64 ping_serial = 62;
+  int64  ping_timestamp = 63;
+}
+
+message GetTraderStatusMessage
+{
+}
+
+message OrderMessage
+{
+  bytes order_client_id = 71;   // FIXME: rename to order_id
+  int64 order_timestamp = 72;
+  uint32 order_trader_id = 73;
+  OrderType order_type = 32;
+  OrderSide side = 33;
+  uint32 leverage = 34;
+  OrderDuration duration = 35;
+  Decimal price = 38;
+  Decimal quantity = 39;
+  Decimal paid_price = 66;
+  Decimal volume = 279; // for spot market if 'price * quantity' has been rounded
+
+  uint64 contract_id = 41;
+
+  bytes old_client_id = 153;    // FIXME: rename to old_order_id
+  bytes orig_client_id = 204;
+  int64 open_time = 205;
+  Decimal orig_quantity = 206;
+  int32 is_closing = 280;
+  int32 may_increase = 293;
+
+  bytes orig_order_id = 327;    // from v129: the auto-generated order_id of the first order in chain
+}
+
+message TraderStatusMessage
+{
+  Decimal trader_balance = 51;
+  Decimal order_margin = 76;
+  Decimal position_margin = 78;
+  Decimal upnl = 79;
+  Decimal pnl = 154;
+  Decimal accum_quantity = 181;
+  Decimal mark_price = 52;
+  Decimal position_contracts = 104;
+  Decimal position_volume = 105;
+  Decimal position_liquidation_volume = 106;
+  Decimal position_bankruptcy_volume = 117;
+  OrderPosition position_type = 107;
+  Decimal last_trade_price = 113;
+  Decimal last_trade_quantity = 116;
+  int64 last_trade_timestamp = 296;
+  Decimal buy_order_margin = 118;
+  Decimal sell_order_margin = 119;
+  repeated TradeMessage trades = 46;
+  repeated OrderMessage orders = 70;
+  uint32 leverage = 34;
+  Decimal buy_order_quantity = 182;
+  Decimal sell_order_quantity = 183;
+  Decimal trader_balance_2 = 278;
+  repeated DelayedActionMessage delayed_actions = 288;
+  Decimal full_position_margin = 298;
+  Decimal full_buy_order_margin = 299;
+  Decimal full_sell_order_margin = 300;
+}
+
+message FundingMessage
+{
+  repeated TradeMessage trades = 46;
+  Decimal trader_balance = 51;
+  Decimal order_margin = 76;
+  Decimal position_margin = 78;
+  Decimal upnl = 79;
+  Decimal pnl = 154;
+  Decimal accum_quantity = 181;
+  Decimal position_contracts = 104;
+  Decimal position_volume = 105;
+  Decimal position_liquidation_volume = 106;
+  Decimal position_bankruptcy_volume = 117;
+  OrderPosition position_type = 107;
+  Decimal buy_order_margin = 118;
+  Decimal sell_order_margin = 119;
+  Decimal payout_per_contract = 102;
+  Decimal payout = 101;
+  Decimal last_trade_price = 113;
+  Decimal last_trade_quantity = 116;
+  int64 last_trade_timestamp = 296;
+  Decimal mark_price = 52;
+  Decimal position_margin_change = 163;
+  Decimal buy_order_quantity = 182;
+  Decimal sell_order_quantity = 183;
+  Decimal full_position_margin = 298;
+  Decimal full_buy_order_margin = 299;
+  Decimal full_sell_order_margin = 300;
+  int64 funding_time = 127;
+  FundingType funding_type = 340;
+}
+
+message OHLCVMessage
+{
+  Decimal open_price = 87;
+  Decimal high_price = 88;
+  Decimal low_price = 89;
+  Decimal close_price = 90;
+  Decimal volume = 48;
+  Decimal average_oracle_price = 130;
+  int64 timestamp = 2;
+}
+
+message OHLCVListMessage
+{
+  repeated OHLCVMessage ohlcvs = 91;
+  Decimal last_trade_price = 113;
+  Decimal last_trade_quantity = 116;
+  int64 last_trade_timestamp = 296;
+}
+
+message TradeListMessage
+{
+  repeated TradeMessage trades = 46;
+}
+
+message SubscribeMessage
+{
+  uint64 subscribe_mask = 94;
+  uint64 unsubscribe_mask = 95;
+}
+
+message SubscribeStatusMessage
+{
+  uint64 subscribe_mask = 94;
+}
+
+/* the engine replies with TraderStatusMessage */
+message UpdateContractMessage
+{
+  uint64 contract_id = 41;
+  uint32 leverage = 34;
+}
+
+/* the engine replies with TraderStatusMessage */
+message UpdateAllContractsMessage
+{
+  uint32 update_mask = 77;  // update bitmask: stop_loss: 1, take_profit: 2, leverage: 4; stop_loss and stop_loss_type are updated at once
+  uint32 leverage = 34;
+}
+
+message CloseContractMessage
+{
+  uint64 contract_id = 41;
+  OrderType order_type = 32;
+  Decimal price = 38;
+  Decimal quantity = 39;
+}
+
+message CloseAllContractsMessage
+{
+  OrderType order_type = 32;
+  Decimal price = 38;
+}
+
+message OrderCanceledMessage
+{
+  OrderStatus status = 42;
+
+  bytes prev_client_id = 40;
+
+  // the canceled orders: deprecated!
+  repeated bytes order_ids = 103;
+
+  // the verbose list of canceled orders
+  repeated OrderMessage orders = 70;
+
+  Decimal trader_balance = 51;
+  Decimal order_margin = 76;
+  Decimal position_margin = 78;
+  Decimal upnl = 79;
+  Decimal pnl = 154;
+  Decimal accum_quantity = 181;
+  Decimal buy_order_margin = 118;
+  Decimal sell_order_margin = 119;
+  Decimal buy_order_quantity = 182;
+  Decimal sell_order_quantity = 183;
+  Decimal trader_balance_2 = 278; // for spot market, balance in base currency
+  Decimal full_position_margin = 298;
+  Decimal full_buy_order_margin = 299;
+  Decimal full_sell_order_margin = 300;
+
+  Decimal mark_price = 52;
+}
+
+message EngineStatusMessage
+{
+  string market_name = 250;
+  string market_description = 269;
+  int64 funding_interval = 162;
+  int64 alert_timestamp = 210;
+  string alert_text = 211;
+  int64 engine_start_timestamp = 214;
+  int32 trading_suspended = 108;
+  int32 funding_suspended = 109;
+  int32 withdrawals_suspended = 110;
+  int32 closed = 111;
+  int32 operations_suspended = 215;
+  int32 liquidations_suspended = 216;
+  int32 deposits_suspended = 270;
+  Decimal insurance_fund_loss_ratio = 268;
+  uint32 soft_max_leverage = 271;
+  uint32 hard_max_leverage = 272;
+  Decimal max_loss = 273;
+  Decimal max_position = 274;
+  int32 position_increase_suspended = 275;
+  int32 position_decrease_suspended = 276;
+}
+
+message GetMarketStateMessage
+{
+}
+
+message DailyStatisticsMessage
+{
+  int64 start_timestamp = 124;
+  Decimal volume = 125;
+  Decimal gross = 126;
+  Decimal high_price = 156;
+  Decimal low_price = 157;
+}
+
+message MarketStateMessage
+{
+  repeated TradeMessage trades = 46;
+  repeated OHLCVMessage ohlcvs = 91;
+  Decimal last_trade_price = 113;
+  Decimal last_trade_quantity = 116;
+  int64 last_trade_timestamp = 296;
+
+  int64 event_timestamp = 122;
+  repeated DailyStatisticsMessage daily_stats = 123;
+
+  int64 funding_time = 127;
+  Decimal funding_rate = 128;
+  Decimal next_funding_rate = 129;
+  Decimal tick_value = 131;
+  Decimal tick_price = 132;
+  Decimal contract_value = 133;
+  int64 funding_interval = 162;
+  Decimal payout_per_contract = 102;
+
+  int64 alert_timestamp = 210;
+  string alert_text = 211;
+
+  Decimal open_interest = 295;
+  Decimal insurance_fund = 297;
+}
+
+message MarketStateUpdateMessage
+{
+  repeated TradeMessage trades = 46;
+  repeated OHLCVMessage ohlcvs = 91;
+  Decimal last_trade_price = 113;
+  Decimal last_trade_quantity = 116;
+  int64 last_trade_timestamp = 296;
+
+  int64 event_timestamp = 122;
+  repeated DailyStatisticsMessage daily_stats = 123;
+
+  int64 funding_time = 127;
+  Decimal funding_rate = 128;
+
+  Decimal next_funding_rate = 129;
+  int64 funding_interval = 162;
+
+  Decimal impact_base_quantity = 137;
+  Decimal dgtx_to_base_price = 138;
+  Decimal impact_value = 158;
+  Decimal impact_quantity = 140;
+  Decimal impact_bid_value = 141;
+  Decimal impact_bid_count = 159;
+  Decimal impact_ask_value = 142;
+  Decimal impact_ask_count = 160;
+  Decimal future_value = 143;
+  Decimal future_count = 161;
+  Decimal spot_price = 139;
+  // indicative interest rate for borrowing quote (USD) DAILY
+  Decimal quote_interest_rate = 150;
+  // indicative interest rate for borrowing base (BTC) DAILY
+  Decimal base_interest_rate = 151;
+  // the current funding rate proportional to the time before the next funding
+  Decimal effective_rate = 145;
+  // the futures price adjusted
+  Decimal fair_price = 146;
+  // premium index
+  Decimal premium_index = 147;
+  // for average computation
+  Decimal premium_index_sum = 148;
+  // for average computation
+  Decimal premium_index_count = 149;
+
+  Decimal payout_per_contract = 102;
+  Decimal next_payout_per_contract = 144;
+
+  int64 alert_timestamp = 210;
+  string alert_text = 211;
+
+  Decimal open_interest = 295;
+  Decimal insurance_fund = 297;
+}
+
+message GetExchangeRatesMessage
+{
+}
+
+message ExchangeRateItemMessage
+{
+  uint32 currency_pair_id = 47;
+  Decimal mark_price = 52;
+  Decimal sell_price = 114; // recommended sell price, for example, for DGTX/BTC it is the price of purchase of one DGTX from the treasury
+  Decimal buy_price = 115;  // recommended buy price, for DGTX/BTC it is the price of byuing back DGTX to the treasury
+  int64 last_update_time = 121;
+  int32 unreliable = 209;
+}
+
+message ExchangeRatesMessage
+{
+  repeated ExchangeRateItemMessage items = 120;
+}
+
+message ContractClosedMessage
+{
+  repeated bytes order_ids = 103;
+}
+
+message ContractTransferredMessage
+{
+  uint64 old_contract_id = 57;
+  uint32 old_trader_id = 165;
+  bytes new_client_id = 44;
+}
+
+message GetTraderBalanceMessage
+{
+  uint32 currency_id = 49;
+}
+
+message TraderBalanceUpdatedMessage
+{
+  uint32 currency_id = 49;
+  Decimal increment = 50;
+  Decimal trader_balance = 51;
+  Decimal order_margin = 76;
+  Decimal position_margin = 78;
+  Decimal full_position_margin = 298;
+  Decimal full_buy_order_margin = 299;
+  Decimal full_sell_order_margin = 300;
+}
+
+message DelayedActionMessage
+{
+  int64 delayed_action_timestamp = 291;
+  bytes delayed_action_client_id = 289;
+  bytes delayed_action_id = 328;
+  bytes old_delayed_action_id = 329;
+  bytes old_delayed_action_client_id = 290;
+  DelayedActionType action_type = 281;
+  DelayedTriggerVariable trigger_variable = 282;
+  DelayedTriggerCondition trigger_condition = 283;
+  Decimal trigger_value = 284;
+  OrderMessage order = 287;
+}
+
+message PlaceDelayedActionMessage
+{
+  DelayedActionMessage delayed_action = 285;
+}
+
+message UpdateDelayedActionMessage
+{
+  bytes prev_client_id = 40;
+  DelayedActionMessage delayed_action = 285;
+}
+
+message CancelDelayedActionMessage
+{
+  bytes prev_client_id = 40;
+  int32 all_for_trader = 286;
+}
+
+message DelayedActionStatusMessage
+{
+  OrderStatus status = 42;
+  repeated DelayedActionMessage delayed_actions = 288;
+}
+
+message LiquidationEntryMessage
+{
+  Decimal liquidation_price = 67;
+  Decimal quantity = 39;
+  int64 entry_timestamp = 155;
+  OrderPosition position = 45;
+}
+
+message LiquidationsMessage
+{
+  repeated LiquidationEntryMessage liquidation_entries = 294;
+}
+
+message FundingInfoMessage
+{
+  int64 funding_time = 127;
+  Decimal funding_rate = 128;
+  Decimal payout_per_contract = 102;
+  Decimal open_interest = 295;
+}
+
+// minimal message to return the error code
+message ErrorMessage
+{
+}
+
+message MarketTraderStatisticsMessage
+{
+  int64 event_timestamp = 122;
+
+  Decimal buy_order_quantity = 182;
+  Decimal sell_order_quantity = 183;
+  Decimal buy_order_volume = 303;
+  Decimal sell_order_volume = 304;
+  Decimal buy_order_paid_volume = 323;
+  Decimal sell_order_paid_volume = 324;
+  Decimal buy_order_margin = 118;
+  Decimal sell_order_margin = 119;
+  uint32 order_count = 227;
+
+  OrderPosition position_type = 107;
+  Decimal position_contracts = 104;
+  Decimal position_volume = 105;
+  Decimal position_liquidation_volume = 106;
+  Decimal position_bankruptcy_volume = 117;
+  Decimal position_paid_volume = 305;
+  Decimal position_funding_paid_volume = 306;
+  Decimal position_margin = 78;
+  uint32 position_count = 307;
+
+  Decimal trader_balance = 51;
+  Decimal trader_balance_2 = 278;
+
+  uint32 maker_trade_count_last_min = 313;
+  Decimal maker_trade_quantity_last_min = 314;
+  Decimal maker_trade_volume_last_min = 315;
+  Decimal maker_trade_paid_volume_last_min = 325;
+  uint32 taker_trade_count_last_min = 316;
+  Decimal taker_trade_quantity_last_min = 317;
+  Decimal taker_trade_volume_last_min = 318;
+  Decimal taker_trade_paid_volume_last_min = 326;
+  Decimal profit_last_min = 254;
+  Decimal profit_2_last_min = 319;
+  Decimal loss_last_min = 255;
+  Decimal loss_2_last_min = 320;
+  Decimal funding_last_min = 308;
+  Decimal deposit_last_min = 309;
+  Decimal deposit_2_last_min = 321;
+  Decimal withdrawal_last_min = 310;
+  Decimal withdrawal_2_last_min = 322;
+
+  uint32 liquidation_count_last_min = 257;
+  Decimal liquidation_quantity_last_min = 258;
+  Decimal liquidation_volume_last_min = 259;
+  Decimal liquidation_paid_volume_last_min = 265;
+  Decimal liquidation_funding_paid_volume_last_min = 266;
+  Decimal liquidation_margin_last_min = 267;
+
+  uint32 place_order_messages_last_min = 330;
+  uint32 cancel_order_messages_last_min = 331;
+  uint32 update_order_messages_last_min = 332;
+  Decimal buy_placed_orders_quantity_last_min = 333;
+  Decimal sell_placed_orders_quantity_last_min = 334;
+  Decimal buy_cancelled_orders_quantity_last_min = 335;
+  Decimal sell_cancelled_orders_quantity_last_min = 336;
+  Decimal buy_matched_orders_quantity_last_min = 337;
+  Decimal sell_matched_orders_quantity_last_min = 338;
+
+  uint32 delayed_count = 311;
+  uint32 triggered_delayed_count_last_min = 312;
+
+  uint64 in_messages_last_min = 260;
+  uint64 trade_messages_last_min = 261;
+
+  double market_market_score = 339;
+}
+
+message Message
+{
+  MessageType msg_type = 1;
+  int64 timestamp = 2;
+  uint32 sender = 3;
+  uint64 serial = 4;
+  uint32 market_id = 5;
+  uint32 trader_id = 6;
+  bytes client_id = 7;
+  uint32 error_code = 43;
+  int64 session_id = 8;
+  bytes auth = 9;
+
+  oneof kontent
+  {
+    PlaceOrderMessage place_order_msg = 513;
+    CancelOrderMessage cancel_order_msg = 514;
+    CancelAllOrdersMessage cancel_all_orders_msg = 515;
+    ChangeLeverageMessage change_leverage_msg = 516;
+    OrderStatusMessage order_status_msg = 517;
+    OrderFilledMessage order_filled_msg = 518;
+    ChangeLeverageAllMessage change_leverage_all_msg = 519;
+    TraderBalanceMessage trader_balance_msg = 522;
+    PositionEventMessage position_event_msg = 523;
+    LeverageMessage leverage_msg = 524;
+    ExchangeRateMessage exchange_rate_msg = 525;
+    OrderBookRequestMessage order_book_request_msg = 526;
+    OrderBookMessage order_book_msg = 527;
+    OrderBookUpdatedMessage order_book_updated_msg = 528;
+    PingMessage ping_msg = 529;
+    PongMessage pong_msg = 530;
+    UpdateOrderMessage update_order_msg = 531;
+    GetTraderStatusMessage get_trader_status_msg = 532;
+    TraderStatusMessage trader_status_msg = 533;
+    FundingMessage funding_msg = 535;
+    OHLCVListMessage ohlcv_list_msg = 536;
+    TradeListMessage trade_list_msg = 537;
+    SubscribeMessage subscribe_msg = 538;
+    SubscribeStatusMessage subscribe_status_msg = 539;
+    UpdateContractMessage update_contract_msg = 540;
+    UpdateAllContractsMessage update_all_contracts_msg = 541;
+    CloseContractMessage close_contract_msg = 542;
+    CloseAllContractsMessage close_all_contracts_msg = 543;
+    OrderCanceledMessage order_canceled_msg = 546;
+    GetMarketStateMessage get_market_state_msg = 548;
+    MarketStateMessage market_state_msg = 549;
+    GetExchangeRatesMessage get_exchange_rates_msg = 550;
+    ExchangeRatesMessage exchange_rates_msg = 551;
+    MarketStateUpdateMessage market_state_update_msg = 552;
+    ContractClosedMessage contract_closed_msg = 553;
+    ContractTransferredMessage contract_transferred_msg = 554;
+    GetTraderBalanceMessage get_trader_balance_msg = 562;
+    TraderBalanceUpdatedMessage trader_balance_updated_msg = 564;
+    PlaceDelayedActionMessage place_delayed_action_msg = 566;
+    UpdateDelayedActionMessage update_delayed_action_msg = 567;
+    CancelDelayedActionMessage cancel_delayed_action_msg = 568;
+    DelayedActionStatusMessage delayed_action_status_msg = 569;
+    LiquidationsMessage liquidations_msg = 570;
+    FundingInfoMessage funding_info_msg = 571;
+    ErrorMessage error_msg = 572;
+    MarketTraderStatisticsMessage market_trader_statistics_msg = 573;
+  }
+}
