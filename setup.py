@@ -5,6 +5,11 @@ from distutils.spawn import spawn, find_executable
 
 package_name = 'digitex_engine_client'
 
+from pathlib import Path
+this_directory = Path(__file__).parent
+long_description = (this_directory / "README.md").read_text()
+
+
 class BuildPyCommand(build_py):
     """A custom build command to compile the proto file."""
 
@@ -35,7 +40,7 @@ class BuildPyCommand(build_py):
 
 setuptools.setup(
     name='digitex-engine-client',
-    version='4.139.0',
+    version='4.145.0',
     license='GPL version 3, excluding DRM provisions',
     author='Sergey Bugaev, Pavel Yushchenko',
     author_email='Sergey Bugaev <bugaev@smartdec.com>, Pavel Yushchenko <pyushchenko@digitexfutures.com>',
@@ -45,10 +50,11 @@ setuptools.setup(
     packages=[package_name],
     package_dir={'': 'src'},
     install_requires=[
-        'aioamqp',
         'aiohttp',
         'protobuf',
         'pytz'
     ],
-    cmdclass={'build_py': BuildPyCommand}
+    cmdclass={'build_py': BuildPyCommand},
+    long_description=long_description,
+    long_description_content_type='text/markdown'
 )
